@@ -1,0 +1,137 @@
+[
+  {
+    "id": "kb001",
+    "topic": "อาหารที่สุนัขกินไม่ได้",
+    "keywords": ["สุนัขกินอะไรไม่ได้", "อาหารต้องห้ามสุนัข", "หมากินไม่ได้", "toxic dog food"],
+    "petType": "dog",
+    "content": "อาหารที่สุนัขห้ามกินได้แก่ ช็อคโกแลต หัวหอม กระเทียม องุ่น ลูกเกด แมคาเดเมียนัท xylitol (สารให้ความหวาน) คาเฟอีน แอลกอฮอล์ และอะโวคาโด สิ่งเหล่านี้เป็นพิษต่อสุนัขและอาจถึงแก่ชีวิตได้",
+    "source": "ASPCA Animal Poison Control",
+    "sourceUrl": "https://www.aspca.org/pet-care/animal-poison-control/toxic-and-non-toxic-plants"
+  },
+  {
+    "id": "kb002",
+    "topic": "อาหารที่แมวกินไม่ได้",
+    "keywords": ["แมวกินอะไรไม่ได้", "อาหารต้องห้ามแมว", "toxic cat food"],
+    "petType": "cat",
+    "content": "อาหารที่แมวห้ามกินได้แก่ หัวหอม กระเทียม ช็อคโกแลต คาเฟอีน แอลกอฮอล์ องุ่น ลูกเกด นมวัว (แมวส่วนใหญ่แพ้แลคโตส) และปลาดิบในปริมาณมาก",
+    "source": "ASPCA Animal Poison Control",
+    "sourceUrl": "https://www.aspca.org/pet-care/animal-poison-control"
+  },
+  {
+    "id": "kb003",
+    "topic": "วัคซีนสุนัข",
+    "keywords": ["วัคซีนสุนัข", "ฉีดวัคซีนหมา", "dog vaccine", "vaccination dog"],
+    "petType": "dog",
+    "content": "วัคซีนหลักสำหรับสุนัขได้แก่ DHPPiL (ป้องกันโรคไข้หัด บารโวไวรัส ตับอักเสบ พาราอินฟลูเอนซา เลปโตสไปโรซิส) และวัคซีนพิษสุนัขบ้า ควรเริ่มฉีดตอนอายุ 6-8 สัปดาห์ และบูสเตอร์ทุกปี",
+    "source": "American Veterinary Medical Association (AVMA)",
+    "sourceUrl": "https://www.avma.org/resources-tools/pet-owners/petcare/vaccination-faqs"
+  },
+  {
+    "id": "kb004",
+    "topic": "วัคซีนแมว",
+    "keywords": ["วัคซีนแมว", "ฉีดวัคซีนแมว", "cat vaccine", "vaccination cat"],
+    "petType": "cat",
+    "content": "วัคซีนหลักสำหรับแมวได้แก่ FVRCP (ป้องกันหวัดแมว calicivirus และ panleukopenia) และวัคซีนพิษสุนัขบ้า ควรเริ่มฉีดตอนอายุ 6-8 สัปดาห์ บูสเตอร์ทุก 1-3 ปีตามคำแนะนำสัตวแพทย์",
+    "source": "American Association of Feline Practitioners (AAFP)",
+    "sourceUrl": "https://catvets.com/guidelines/practice-guidelines/aafp-vaccination-guidelines"
+  },
+  {
+    "id": "kb005",
+    "topic": "อาหารลูกแมว",
+    "keywords": ["อาหารลูกแมว", "ลูกแมวกินอะไร", "kitten food", "เลี้ยงลูกแมว"],
+    "petType": "cat",
+    "content": "ลูกแมวอายุต่ำกว่า 4 สัปดาห์ต้องดื่มนมแม่หรือนมทดแทนสำหรับลูกแมวโดยเฉพาะ อายุ 4-8 สัปดาห์เริ่มอาหารเปียกแช่น้ำ อายุ 8 สัปดาห์ขึ้นไปกินอาหารเม็ดลูกแมวได้ ควรให้อาหารที่มีโปรตีนสูง 30-35%",
+    "source": "VCA Animal Hospitals",
+    "sourceUrl": "https://vcahospitals.com/know-your-pet/feeding-times-and-amounts-for-kittens"
+  },
+  {
+    "id": "kb006",
+    "topic": "อาหารลูกสุนัข",
+    "keywords": ["อาหารลูกสุนัข", "ลูกหมากินอะไร", "puppy food", "เลี้ยงลูกหมา"],
+    "petType": "dog",
+    "content": "ลูกสุนัขอายุต่ำกว่า 4 สัปดาห์ต้องดื่มนมแม่ อายุ 3-4 สัปดาห์เริ่มอาหารเปียก อายุ 6-8 สัปดาห์กินอาหารเม็ดลูกสุนัขได้ ควรให้อาหาร 3-4 มื้อต่อวัน และเลือกอาหารที่มีโปรตีนสูงเหมาะกับขนาดพันธุ์",
+    "source": "American Kennel Club (AKC)",
+    "sourceUrl": "https://www.akc.org/expert-advice/nutrition/puppy-feeding-fundamentals/"
+  },
+  {
+    "id": "kb007",
+    "topic": "การอาบน้ำสุนัข",
+    "keywords": ["อาบน้ำสุนัข", "อาบน้ำหมา", "bathe dog", "wash dog"],
+    "petType": "dog",
+    "content": "สุนัขควรอาบน้ำทุก 4-6 สัปดาห์ หรือเมื่อตัวสกปรก ใช้แชมพูสำหรับสุนัขโดยเฉพาะ ห้ามใช้แชมพูคน น้ำอุ่นพอดี เช็ดให้แห้งสนิทโดยเฉพาะในหู เพื่อป้องกันเชื้อรา",
+    "source": "American Kennel Club (AKC)",
+    "sourceUrl": "https://www.akc.org/expert-advice/health/how-often-should-you-bathe-your-dog/"
+  },
+  {
+    "id": "kb008",
+    "topic": "การอาบน้ำแมว",
+    "keywords": ["อาบน้ำแมว", "bathe cat", "wash cat"],
+    "petType": "cat",
+    "content": "แมวทำความสะอาดตัวเองได้ดี โดยทั่วไปไม่จำเป็นต้องอาบน้ำบ่อย อาบน้ำเมื่อตัวสกปรกมากหรือมีสารเคมีติดขน ใช้แชมพูสำหรับแมวโดยเฉพาะ น้ำอุ่น และเช็ดให้แห้งสนิทหลังอาบ",
+    "source": "Cornell Feline Health Center",
+    "sourceUrl": "https://www.vet.cornell.edu/departments/cornell-feline-health-center"
+  },
+  {
+    "id": "kb009",
+    "topic": "แมวเครียด",
+    "keywords": ["แมวเครียด", "แมวซึม", "cat stress", "stressed cat", "แมวผิดปกติ"],
+    "petType": "cat",
+    "content": "อาการแมวเครียดได้แก่ ซ่อนตัวบ่อย กินน้อยลง ขับถ่ายนอกกระบะ เลียขนมากผิดปกติ ร้องมากขึ้น หรือก้าวร้าว สาเหตุมักเกิดจากการเปลี่ยนแปลงสภาพแวดล้อม สัตว์ใหม่ หรือคนแปลกหน้า",
+    "source": "International Cat Care",
+    "sourceUrl": "https://icatcare.org/advice/stress-in-cats/"
+  },
+  {
+    "id": "kb010",
+    "topic": "สุนัขท้องเสีย",
+    "keywords": ["สุนัขท้องเสีย", "หมาท้องเสีย", "dog diarrhea", "สุนัขถ่ายเหลว"],
+    "petType": "dog",
+    "content": "สุนัขท้องเสียเล็กน้อย 1-2 วันสามารถดูแลที่บ้านได้ โดยงดอาหาร 12-24 ชม. ให้น้ำเพียงพอ แล้วค่อยให้อาหารอ่อนเช่นข้าวต้มไก่ต้ม แต่ถ้าท้องเสียเกิน 2 วัน มีเลือด ซึม หรือลูกสุนัขให้รีบพาไปสัตวแพทย์",
+    "source": "VCA Animal Hospitals",
+    "sourceUrl": "https://vcahospitals.com/know-your-pet/diarrhea-in-dogs"
+  },
+  {
+    "id": "kb011",
+    "topic": "แมวไม่กินข้าว",
+    "keywords": ["แมวไม่กินข้าว", "แมวไม่กินอาหาร", "cat not eating", "แมวอดอาหาร"],
+    "petType": "cat",
+    "content": "แมวไม่กินอาหารเกิน 24-48 ชม.เป็นเรื่องน่ากังวล เพราะอาจทำให้เกิดภาวะตับอักเสบ สาเหตุได้แก่ เครียด ป่วย ไม่ชอบอาหารใหม่ หรือฟันมีปัญหา ถ้าไม่กินเกิน 2 วันควรพาไปสัตวแพทย์",
+    "source": "Cornell Feline Health Center",
+    "sourceUrl": "https://www.vet.cornell.edu/departments/cornell-feline-health-center"
+  },
+  {
+    "id": "kb012",
+    "topic": "การดูแลสัตว์เลี้ยงสูงวัย",
+    "keywords": ["สัตว์เลี้ยงแก่", "สัตว์วัยทอง", "senior pet", "สุนัขแก่", "แมวแก่"],
+    "petType": "all",
+    "content": "สัตว์เลี้ยงอายุมากต้องการการดูแลพิเศษ ได้แก่ ตรวจสุขภาพทุก 6 เดือน อาหารสำหรับสัตว์สูงวัยที่มีแคลอรี่ต่ำกว่า ออกกำลังกายเบาๆ สม่ำเสมอ ดูแลฟัน และสังเกตอาการผิดปกติเช่น ดื่มน้ำมากขึ้น ปัสสาวะบ่อย หรือน้ำหนักลด",
+    "source": "American Veterinary Medical Association (AVMA)",
+    "sourceUrl": "https://www.avma.org/resources-tools/pet-owners/petcare/senior-pets"
+  },
+  {
+    "id": "kb013",
+    "topic": "การป้องกันพยาธิ",
+    "keywords": ["พยาธิสุนัข", "พยาธิแมว", "deworming", "heartworm", "ป้องกันพยาธิ", "เห็บหมัด"],
+    "petType": "all",
+    "content": "ควรถ่ายพยาธิสุนัขและแมวทุก 3 เดือน ป้องกันเห็บหมัดด้วยยาหยดหรือปลอกคอกันเห็บทุกเดือน และป้องกันพยาธิหัวใจด้วยยาทุกเดือน โดยเฉพาะในพื้นที่ที่มียุงชุกชุม",
+    "source": "American Veterinary Medical Association (AVMA)",
+    "sourceUrl": "https://www.avma.org/resources-tools/pet-owners/petcare/internal-parasites"
+  },
+  {
+    "id": "kb014",
+    "topic": "การฝึกสุนัข",
+    "keywords": ["ฝึกสุนัข", "ฝึกหมา", "dog training", "สุนัขดื้อ", "ฝึกนั่ง"],
+    "petType": "dog",
+    "content": "การฝึกสุนัขที่ดีควรใช้ positive reinforcement คือให้รางวัลเมื่อทำถูก ไม่ลงโทษด้วยการตี ฝึกทีละคำสั่งจนชำนาญก่อนสอนคำสั่งใหม่ ฝึกวันละ 5-10 นาที สม่ำเสมอดีกว่าฝึกนานๆ ไม่บ่อย",
+    "source": "American Kennel Club (AKC)",
+    "sourceUrl": "https://www.akc.org/expert-advice/training/"
+  },
+  {
+    "id": "kb015",
+    "topic": "ทำหมันสัตว์เลี้ยง",
+    "keywords": ["ทำหมัน", "ตอน", "spay", "neuter", "ควรทำหมันไหม"],
+    "petType": "all",
+    "content": "การทำหมันช่วยลดความเสี่ยงมะเร็งระบบสืบพันธุ์ ลดพฤติกรรมก้าวร้าว และช่วยควบคุมประชากรสัตว์ ควรทำเมื่ออายุ 4-6 เดือนสำหรับแมว และ 6-12 เดือนสำหรับสุนัข ขึ้นอยู่กับขนาดและสุขภาพ ควรปรึกษาสัตวแพทย์",
+    "source": "ASPCA",
+    "sourceUrl": "https://www.aspca.org/pet-care/general-pet-care/spayneuter-your-pet"
+  }
+]
