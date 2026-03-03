@@ -21,7 +21,6 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) { router.push('/login'); return; }
     fetchMyPosts();
   }, [user]);
 

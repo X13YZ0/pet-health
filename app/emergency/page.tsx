@@ -1,53 +1,66 @@
 'use client';
-import { useAuth } from '@/lib/AuthContext';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 
 export default function EmergencyPage() {
-  const { user } = useAuth();
-  const router = useRouter();
+  const contacts = [
+    { name: 'สายด่วนสัตวแพทย์', number: '1669', hours: '24 ชั่วโมง', open: true },
+    { name: 'คลินิกสัตว์ฉุกเฉิน', number: '02-123-4567', hours: '24 ชั่วโมง', open: true },
+    { name: 'โรงพยาบาลสัตว์จุฬา', number: '02-218-9740', hours: 'จ–ศ 8:00–20:00', open: false },
+    { name: 'โรงพยาบาลสัตว์กาสิกร', number: '02-579-7692', hours: '24 ชั่วโมง', open: true },
+  ];
 
-  useEffect(() => {
-    if (!user) router.push('/login');
-  }, [user]);
+  const symptoms = [
+    { icon: '😵', text: 'ชักหรือหมดสติ', critical: true },
+    { icon: '😮‍💨', text: 'หายใจลำบากหรือหอบ', critical: true },
+    { icon: '🤢', text: 'กินสารพิษหรือยาเข้าไป', critical: true },
+    { icon: '🩸', text: 'เลือดออกไม่หยุด', critical: true },
+    { icon: '🤕', text: 'ถูกรถชนหรือบาดเจ็บรุนแรง', critical: false },
+    { icon: '🌡️', text: 'ไข้สูงหรืออุณหภูมิต่ำผิดปกติ', critical: false },
+    { icon: '🚫', text: 'ไม่กินอาหารเกิน 24 ชั่วโมง', critical: false },
+    { icon: '😿', text: 'เจ็บปวดรุนแรง ร้องไม่หยุด', critical: false },
+  ];
 
-  if (!user) return null;
+  const steps = [
+    'ตั้งสติ — สัตว์เลี้ยงจะรับรู้ความตื่นตระหนกของเรา',
+    'โทรแจ้งสัตวแพทย์ก่อนออกเดินทาง เพื่อให้เตรียมพร้อมรับ',
+    'อย่าให้อาหารหรือน้ำถ้ามีอาการอาเจียนหรือชัก',
+    'ห่อตัวด้วยผ้านุ่มๆ เพื่อให้ความอบอุ่นและลดการดิ้น',
+    'เดินทางให้เร็วที่สุด — ทุกนาทีมีความสำคัญ',
+  ];
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <main className="max-w-4xl mx-auto px-6 py-8">
+    <div style={{background: '#f9fafb', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif'}}>
+      <main style={{maxWidth: '640px', margin: '0 auto', padding: '32px 24px'}}>
 
-        {/* Header Banner */}
-        <div className="bg-red-600 text-white rounded-xl p-6 mb-6">
-          <h1 className="text-2xl font-bold mb-1">🚨 ศูนย์ข้อมูลฉุกเฉิน</h1>
-          <p className="text-red-100 text-sm">หากสัตว์เลี้ยงของคุณมีอาการฉุกเฉิน กรุณาติดต่อสัตวแพทย์ทันที อย่ารอ!</p>
+        {/* Hero */}
+        <div style={{background: 'linear-gradient(135deg, #dc2626, #b91c1c)', borderRadius: '16px', padding: '28px', marginBottom: '20px', color: 'white'}}>
+          <h1 style={{fontSize: '20px', fontWeight: '700', margin: '0 0 8px', letterSpacing: '-0.02em'}}>
+            🚨 ฉุกเฉินสัตว์เลี้ยง
+          </h1>
+          <p style={{fontSize: '14px', margin: '0 0 24px', opacity: 0.9, lineHeight: '1.6'}}>
+            อย่ารอ — หากสัตว์เลี้ยงมีอาการฉุกเฉิน ติดต่อสัตวแพทย์ทันที
+          </p>
+          <a href="tel:1669" style={{display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'white', color: '#dc2626', padding: '11px 24px', borderRadius: '10px', textDecoration: 'none', fontWeight: '700', fontSize: '16px'}}>
+            📞 โทร 1669 ทันที
+          </a>
         </div>
 
-        {/* Emergency Contacts */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
-          <h2 className="font-bold text-gray-900 text-lg mb-4">📞 เบอร์ติดต่อฉุกเฉิน</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { name: 'สายด่วนสัตวแพทย์', number: '1669', status: 'open', desc: '24 ชั่วโมง' },
-              { name: 'คลินิกสัตว์ฉุกเฉิน', number: '02-123-4567', status: 'open', desc: 'เปิด 24 ชม.' },
-              { name: 'โรงพยาบาลสัตว์จุฬา', number: '02-218-9740', status: 'busy', desc: 'จันทร์-ศุกร์ 8-20น.' },
-              { name: 'โรงพยาบาลสัตว์กาสิกร', number: '02-579-7692', status: 'open', desc: 'เปิด 24 ชม.' },
-            ].map((contact, i) => (
-              <a
-                key={i}
-                href={`tel:${contact.number}`}
-                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-red-300 hover:bg-red-50 transition"
+        {/* Contacts */}
+        <div style={{background: 'white', borderRadius: '14px', border: '1px solid #e5e7eb', padding: '20px', marginBottom: '14px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)'}}>
+          <h2 style={{fontSize: '14px', fontWeight: '700', color: '#111827', margin: '0 0 14px', letterSpacing: '-0.01em'}}>📞 เบอร์ติดต่อฉุกเฉิน</h2>
+          <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+            {contacts.map((c, i) => (
+              <a key={i} href={`tel:${c.number}`} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e5e7eb', textDecoration: 'none', transition: 'all 0.15s', background: 'white'}}
+                onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.background = '#f9fafb'}
+                onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.background = 'white'}
               >
                 <div>
-                  <p className="font-semibold text-gray-900 text-sm">{contact.name}</p>
-                  <p className="text-gray-500 text-xs">{contact.desc}</p>
+                  <p style={{fontSize: '14px', fontWeight: '600', color: '#111827', margin: '0 0 2px'}}>{c.name}</p>
+                  <p style={{fontSize: '12px', color: '#9ca3af', margin: 0}}>{c.hours}</p>
                 </div>
-                <div className="text-right">
-                  <p className="font-mono font-bold text-red-600">{contact.number}</p>
-                  <span className={`text-xs px-2 py-0.5 rounded-full text-white ${
-                    contact.status === 'open' ? 'bg-green-500' : 'bg-yellow-500'
-                  }`}>
-                    {contact.status === 'open' ? 'เปิดอยู่' : 'ยุ่ง'}
+                <div style={{textAlign: 'right'}}>
+                  <p style={{fontFamily: 'monospace', fontWeight: '700', fontSize: '15px', color: '#dc2626', margin: '0 0 4px'}}>{c.number}</p>
+                  <span style={{fontSize: '11px', fontWeight: '600', padding: '2px 8px', borderRadius: '999px', background: c.open ? '#dcfce7' : '#fef9c3', color: c.open ? '#15803d' : '#a16207'}}>
+                    {c.open ? 'เปิดอยู่' : 'เวลาทำการ'}
                   </span>
                 </div>
               </a>
@@ -55,66 +68,32 @@ export default function EmergencyPage() {
           </div>
         </div>
 
-        {/* Emergency Symptoms */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
-          <h2 className="font-bold text-gray-900 text-lg mb-4">⚠️ อาการที่ต้องไปหาสัตวแพทย์ทันที</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {[
-              { icon: '🤢', text: 'กินสารพิษหรือยาเข้าไป', priority: 'critical' },
-              { icon: '😵', text: 'ชักหรือหมดสติ', priority: 'critical' },
-              { icon: '😮‍💨', text: 'หายใจลำบากหรือหอบ', priority: 'critical' },
-              { icon: '🩸', text: 'เลือดออกไม่หยุด', priority: 'critical' },
-              { icon: '🤕', text: 'ได้รับบาดเจ็บรุนแรง', priority: 'high' },
-              { icon: '🌡️', text: 'ไข้สูงมากหรืออุณหภูมิต่ำผิดปกติ', priority: 'high' },
-              { icon: '🚫', text: 'ไม่กินอาหารหรือน้ำเกิน 24 ชม.', priority: 'high' },
-              { icon: '😿', text: 'เจ็บปวดรุนแรง ร้องไม่หยุด', priority: 'high' },
-            ].map((symptom, i) => (
-              <div
-                key={i}
-                className={`flex items-center gap-3 p-3 rounded-lg border-l-4 ${
-                  symptom.priority === 'critical'
-                    ? 'bg-red-50 border-l-red-500'
-                    : 'bg-yellow-50 border-l-yellow-500'
-                }`}
-              >
-                <span className="text-xl">{symptom.icon}</span>
-                <span className="text-sm text-gray-800">{symptom.text}</span>
+        {/* Symptoms */}
+        <div style={{background: 'white', borderRadius: '14px', border: '1px solid #e5e7eb', padding: '20px', marginBottom: '14px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)'}}>
+          <h2 style={{fontSize: '14px', fontWeight: '700', color: '#111827', margin: '0 0 14px', letterSpacing: '-0.01em'}}>⚠️ อาการที่ต้องพบสัตวแพทย์ทันที</h2>
+          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px'}}>
+            {symptoms.map((s, i) => (
+              <div key={i} style={{display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '10px', background: s.critical ? '#fef2f2' : '#fffbeb', borderLeft: `3px solid ${s.critical ? '#ef4444' : '#f59e0b'}`}}>
+                <span style={{fontSize: '18px', flexShrink: 0}}>{s.icon}</span>
+                <span style={{fontSize: '13px', color: '#374151', lineHeight: '1.4'}}>{s.text}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* First Aid Guide */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
-          <h2 className="font-bold text-gray-900 text-lg mb-4">🩺 สิ่งที่ควรทำก่อนถึงสัตวแพทย์</h2>
-          <div className="space-y-3">
-            {[
-              { step: '1', text: 'ตั้งสติ อย่าตื่นตกใจ สัตว์เลี้ยงจะรู้สึกได้ถึงความตื่นตระหนก' },
-              { step: '2', text: 'โทรแจ้งสัตวแพทย์ก่อนเดินทาง เพื่อให้เตรียมพร้อมรับ' },
-              { step: '3', text: 'อย่าให้อาหารหรือน้ำ ถ้าสัตว์มีอาการอาเจียนหรือชัก' },
-              { step: '4', text: 'ห่อตัวด้วยผ้านุ่มๆ เพื่อให้อบอุ่นและลดการดิ้น' },
-              { step: '5', text: 'เดินทางให้เร็วที่สุด ทุกนาทีมีความสำคัญ' },
-            ].map((guide, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <div className="w-7 h-7 bg-teal-600 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
-                  {guide.step}
+        {/* First Aid */}
+        <div style={{background: 'white', borderRadius: '14px', border: '1px solid #e5e7eb', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)'}}>
+          <h2 style={{fontSize: '14px', fontWeight: '700', color: '#111827', margin: '0 0 14px', letterSpacing: '-0.01em'}}>🩺 สิ่งที่ควรทำก่อนถึงสัตวแพทย์</h2>
+          <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+            {steps.map((step, i) => (
+              <div key={i} style={{display: 'flex', gap: '12px', alignItems: 'flex-start'}}>
+                <div style={{width: '22px', height: '22px', borderRadius: '50%', background: '#0d9488', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '700', flexShrink: 0, marginTop: '1px'}}>
+                  {i + 1}
                 </div>
-                <p className="text-sm text-gray-700 pt-1">{guide.text}</p>
+                <p style={{fontSize: '14px', color: '#374151', lineHeight: '1.6', margin: 0}}>{step}</p>
               </div>
             ))}
           </div>
-        </div>
-
-        {/* CTA */}
-        <div className="bg-red-600 text-white rounded-xl p-6 text-center">
-          <p className="font-bold text-lg mb-2">หากไม่แน่ใจ ให้ไปหาสัตวแพทย์ทันที</p>
-          <p className="text-red-100 text-sm mb-4">ดีกว่ารอจนอาการหนักขึ้น</p>
-          <a
-            href="tel:1669"
-            className="bg-white text-red-600 font-bold px-8 py-3 rounded-lg inline-block hover:bg-red-50 transition"
-          >
-            📞 โทร 1669 ทันที
-          </a>
         </div>
 
       </main>

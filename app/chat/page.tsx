@@ -1,207 +1,166 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { useAuth } from '@/lib/AuthContext';
-import { useRouter } from 'next/navigation';
 
 interface Message {
   role: 'user' | 'ai';
   content: string;
   citations?: { title: string; source: string; url: string }[];
   isEmergency?: boolean;
+  contacts?: { name: string; number: string }[];
 }
 
+const QUICK = [
+  'สุนัขกินองุ่นได้ไหม?',
+  'แมวควรฉีดวัคซีนอะไรบ้าง?',
+  'ลูกแมวอายุ 2 เดือนกินอะไรได้บ้าง?',
+  'วิธีป้องกันเห็บหมัด',
+];
+
 export default function ChatPage() {
-  const { user } = useAuth();
-  const router = useRouter();
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'ai',
-      content: 'สวัสดีครับ! ฉันคือ Pet AI Assistant 🐾 ถามเรื่องสุขภาพและการดูแลสัตว์เลี้ยงได้เลยครับ',
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([{
+    role: 'ai',
+    content: 'สวัสดีครับ 👋 ผมคือ Pet AI Assistant\nถามเรื่องสุขภาพและการดูแลสัตว์เลี้ยงได้เลย ตอบพร้อมอ้างอิงแหล่งข้อมูลที่เชื่อถือได้ครับ',
+  }]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!user) router.push('/login');
-  }, [user]);
-
-  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, loading]);
 
-  const quickQuestions = [
-    '🚫 สุนัขกินอะไรไม่ได้บ้าง?',
-    '💉 ตารางวัคซีนสัตว์เลี้ยง',
-    '😿 แมวเครียดมีอาการอย่างไร?',
-    '🦴 อาหารสัตว์เลี้ยงสูงวัย',
-  ];
-
-  const sendMessage = async (text?: string) => {
-    const messageText = text || input.trim();
-    if (!messageText || loading) return;
-
+  const send = async (text?: string) => {
+    const msg = (text || input).trim();
+    if (!msg || loading) return;
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', content: messageText }]);
+    setMessages(p => [...p, { role: 'user', content: msg }]);
     setLoading(true);
-
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: messageText }),
+        body: JSON.stringify({ message: msg }),
       });
       const data = await res.json();
-
-      setMessages(prev => [...prev, {
+      setMessages(p => [...p, {
         role: 'ai',
         content: data.message,
         citations: data.citations,
         isEmergency: data.type === 'emergency',
+        contacts: data.contacts,
       }]);
     } catch {
-      setMessages(prev => [...prev, {
-        role: 'ai',
-        content: 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง',
-      }]);
+      setMessages(p => [...p, { role: 'ai', content: 'เกิดข้อผิดพลาด กรุณาลองใหม่' }]);
     }
     setLoading(false);
   };
 
-  if (!user) return null;
-
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <main className="max-w-3xl mx-auto px-6 py-8">
+    <div style={{
+      background: '#f9fafb', height: '100vh',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+      display: 'flex', flexDirection: 'column',
+    }}>
+      <div style={{maxWidth: '720px', margin: '0 auto', width: '100%', flex: 1, display: 'flex', flexDirection: 'column', padding: '0 24px'}}>
 
         {/* Header */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-4 flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center text-white font-bold">AI</div>
+        <div style={{display: 'flex', alignItems: 'center', gap: '10px', padding: '20px 0 16px'}}>
+          <div style={{width: '36px', height: '36px', background: '#0d9488', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px'}}>🐾</div>
           <div>
-            <h1 className="font-bold text-gray-900">Pet AI Assistant</h1>
-            <p className="text-xs text-green-500 font-medium">● ออนไลน์ — ตอบพร้อม citation จากแหล่งน่าเชื่อถือ</p>
+            <p style={{fontSize: '15px', fontWeight: '700', color: '#111827', margin: 0, letterSpacing: '-0.02em'}}>Pet AI Assistant</p>
+            <p style={{fontSize: '11px', color: '#10b981', margin: 0, fontWeight: '500'}}>● ออนไลน์ — ตอบพร้อม citation จากแหล่งน่าเชื่อถือ</p>
           </div>
         </div>
 
         {/* Quick Questions */}
-        <div className="flex gap-2 flex-wrap mb-4">
-          {quickQuestions.map((q, i) => (
-            <button
-              key={i}
-              onClick={() => sendMessage(q.replace(/^.{2}/, '').trim())}
-              className="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-2 rounded-full hover:border-teal-400 hover:text-teal-600 transition"
-            >
-              {q}
-            </button>
+        <div style={{display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '16px'}}>
+          {QUICK.map((q, i) => (
+            <button key={i} onClick={() => send(q)}
+              style={{padding: '5px 12px', borderRadius: '999px', border: '1px solid #e5e7eb', background: 'white', color: '#6b7280', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s'}}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#0d9488'; (e.currentTarget as HTMLButtonElement).style.color = '#0d9488'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#e5e7eb'; (e.currentTarget as HTMLButtonElement).style.color = '#6b7280'; }}
+            >{q}</button>
           ))}
         </div>
 
-        {/* Chat Messages */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-4 min-h-[400px] max-h-[500px] overflow-y-auto">
-          <div className="space-y-4">
-            {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                {msg.role === 'ai' && (
-                  <div className="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center text-white text-xs font-bold mr-2 flex-shrink-0 mt-1">AI</div>
-                )}
-                <div className={`max-w-[75%] ${msg.role === 'user' ? 'message-user px-4 py-3' : ''}`}>
-                  {msg.isEmergency ? (
-                    // Emergency Response
-                    <div className="bg-red-50 border-2 border-red-400 rounded-xl p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-xl">🚨</span>
-                        <span className="font-bold text-red-700">ตรวจพบเหตุฉุกเฉิน!</span>
-                      </div>
-                      <p className="text-red-800 text-sm mb-3">{msg.content}</p>
-                      {msg.citations && (
-                        <div className="space-y-2">
-                          {msg.citations.map((c, j) => (
-                            <a key={j} href={`tel:${c.source}`}
-                              className="flex items-center justify-between bg-red-500 text-white px-3 py-2 rounded-lg text-sm hover:bg-red-600 transition"
-                            >
-                              <span>{c.title}</span>
-                              <span className="font-mono font-bold">{c.source}</span>
-                            </a>
-                          ))}
-                        </div>
-                      )}
-                      <a href="/emergency"
-                        className="block text-center bg-red-700 text-white px-3 py-2 rounded-lg text-sm mt-2 hover:bg-red-800 transition"
-                      >
-                        ดูข้อมูลฉุกเฉินเพิ่มเติม →
+        {/* Messages */}
+        <div style={{flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: '16px'}}>
+          {messages.map((m, i) => (
+            <div key={i} style={{display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start', gap: '8px', alignItems: 'flex-start'}}>
+              {m.role === 'ai' && (
+                <div style={{width: '26px', height: '26px', borderRadius: '7px', background: '#0d9488', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: '700', flexShrink: 0, marginTop: '2px'}}>AI</div>
+              )}
+              <div style={{maxWidth: '76%'}}>
+                {m.isEmergency ? (
+                  <div style={{background: '#fef2f2', border: '1.5px solid #fca5a5', borderRadius: '14px', padding: '14px'}}>
+                    <p style={{fontWeight: '700', color: '#991b1b', margin: '0 0 6px', fontSize: '14px'}}>🚨 ตรวจพบเหตุฉุกเฉิน</p>
+                    <p style={{fontSize: '13px', color: '#7f1d1d', margin: '0 0 12px', lineHeight: '1.6'}}>{m.content}</p>
+                    {m.contacts?.map((c, j) => (
+                      <a key={j} href={`tel:${c.number}`} style={{display: 'flex', justifyContent: 'space-between', background: '#ef4444', color: 'white', padding: '8px 12px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: '600', marginBottom: '6px'}}>
+                        <span>{c.name}</span><span>{c.number}</span>
                       </a>
-                    </div>
-                  ) : msg.role === 'ai' ? (
-                    // AI Response
-                    <div className="message-ai px-4 py-3">
-                      <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{msg.content}</p>
-                      {msg.citations && msg.citations.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-gray-200">
-                          <p className="text-xs text-gray-400 mb-2">📚 แหล่งอ้างอิง:</p>
-                          <div className="space-y-1">
-                            {msg.citations.map((c, j) => (
-                              <a key={j} href={c.url} target="_blank" rel="noopener noreferrer"
-                                className="flex items-center gap-2 text-xs text-blue-600 hover:text-blue-800 hover:underline"
-                              >
-                                <span>[{j + 1}]</span>
-                                <span>{c.title} — {c.source}</span>
-                              </a>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    // User Message
-                    <p className="text-sm">{msg.content}</p>
-                  )}
-                </div>
-              </div>
-            ))}
-
-            {/* Loading */}
-            {loading && (
-              <div className="flex justify-start">
-                <div className="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center text-white text-xs font-bold mr-2 flex-shrink-0">AI</div>
-                <div className="message-ai px-4 py-3">
-                  <div className="typing-indicator">
-                    <div className="typing-dot"></div>
-                    <div className="typing-dot"></div>
-                    <div className="typing-dot"></div>
+                    ))}
+                    <a href="/emergency" style={{display: 'block', textAlign: 'center', background: '#991b1b', color: 'white', padding: '8px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: '500'}}>ดูข้อมูลฉุกเฉิน →</a>
                   </div>
+                ) : m.role === 'user' ? (
+                  <div style={{background: '#0d9488', color: 'white', padding: '10px 14px', borderRadius: '16px 16px 4px 16px', fontSize: '14px', lineHeight: '1.6'}}>{m.content}</div>
+                ) : (
+                  <div style={{background: 'white', border: '1px solid #e5e7eb', padding: '12px 14px', borderRadius: '4px 16px 16px 16px', fontSize: '14px', lineHeight: '1.7', color: '#374151', boxShadow: '0 1px 3px rgba(0,0,0,0.04)'}}>
+                    <p style={{margin: 0, whiteSpace: 'pre-wrap'}}>{m.content}</p>
+                    {m.citations && m.citations.length > 0 && (
+                      <div style={{marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #f3f4f6'}}>
+                        <p style={{fontSize: '11px', color: '#9ca3af', margin: '0 0 6px', fontWeight: '600', letterSpacing: '0.05em', textTransform: 'uppercase'}}>แหล่งอ้างอิง</p>
+                        {m.citations.map((c, j) => (
+                          <a key={j} href={c.url} target="_blank" rel="noopener noreferrer" style={{display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#0d9488', textDecoration: 'none', marginBottom: '3px'}}>
+                            <span style={{color: '#d1d5db'}}>[{j+1}]</span>
+                            <span style={{textDecoration: 'underline', textUnderlineOffset: '2px'}}>{c.title} — {c.source}</span>
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+
+          {loading && (
+            <div style={{display: 'flex', gap: '8px', alignItems: 'flex-start'}}>
+              <div style={{width: '26px', height: '26px', borderRadius: '7px', background: '#0d9488', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: '700', flexShrink: 0}}>AI</div>
+              <div style={{background: 'white', border: '1px solid #e5e7eb', padding: '14px', borderRadius: '4px 16px 16px 16px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)'}}>
+                <div style={{display: 'flex', gap: '4px', alignItems: 'center'}}>
+                  {[0,1,2].map(i => (
+                    <div key={i} style={{width: '6px', height: '6px', borderRadius: '50%', background: '#9ca3af', animation: 'bounce 1.4s infinite ease-in-out', animationDelay: `${i * 0.16}s`}} />
+                  ))}
                 </div>
               </div>
-            )}
-            <div ref={bottomRef} />
-          </div>
+            </div>
+          )}
+          <div ref={bottomRef} />
         </div>
 
         {/* Input */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-3 flex gap-3">
-          <input
-            type="text"
+        <div style={{background: 'white', border: '1px solid #e5e7eb', borderRadius: '14px', padding: '10px 10px 10px 16px', marginBottom: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', display: 'flex', gap: '8px', alignItems: 'flex-end'}}>
+          <textarea
             value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-            placeholder="ถามเรื่องสุขภาพสัตว์เลี้ยง... (กด Enter เพื่อส่ง)"
-            className="flex-1 text-sm focus:outline-none bg-transparent chat-input border border-gray-200 rounded-lg px-3 py-2"
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+            placeholder="ถามเรื่องสุขภาพสัตว์เลี้ยง... (Enter เพื่อส่ง)"
+            rows={1}
+            style={{flex: 1, border: 'none', outline: 'none', fontSize: '14px', color: '#111827', resize: 'none', fontFamily: 'inherit', lineHeight: '1.6', background: 'transparent', maxHeight: '120px'}}
           />
-          <button
-            onClick={() => sendMessage()}
-            disabled={loading || !input.trim()}
-            className="bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 disabled:opacity-50 transition"
-          >
-            ส่ง
+          <button onClick={() => send()} disabled={loading || !input.trim()}
+            style={{width: '34px', height: '34px', borderRadius: '8px', background: loading || !input.trim() ? '#e5e7eb' : '#0d9488', color: loading || !input.trim() ? '#9ca3af' : 'white', border: 'none', cursor: loading || !input.trim() ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0, transition: 'all 0.15s'}}>
+            ↑
           </button>
         </div>
 
-        {/* Disclaimer */}
-        <p className="text-center text-xs text-gray-400 mt-3">
+        <p style={{textAlign: 'center', fontSize: '11px', color: '#9ca3af', paddingBottom: '16px'}}>
           ⚠️ ข้อมูลนี้ไม่ใช่การวินิจฉัยโรค หากสัตว์เลี้ยงมีอาการผิดปกติควรปรึกษาสัตวแพทย์
         </p>
+      </div>
 
-      </main>
+      <style>{`@keyframes bounce { 0%,80%,100%{transform:translateY(0);opacity:.4} 40%{transform:translateY(-5px);opacity:1} }`}</style>
     </div>
   );
 }

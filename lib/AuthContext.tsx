@@ -23,10 +23,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
+  <AuthContext.Provider value={{ user, loading }}>
+    {children}
+  </AuthContext.Provider>
+);
 }
 
 export const useAuth = () => useContext(AuthContext);

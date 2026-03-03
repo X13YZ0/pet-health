@@ -1,195 +1,229 @@
 'use client';
 import { useAuth } from '@/lib/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
 
 export default function HomePage() {
   const { user } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    if (!user) router.push('/login');
-  }, [user]);
+  const features = [
+    {
+      icon: '🤖',
+      title: 'AI Assistant',
+      desc: 'ถามเรื่องสุขภาพสัตว์เลี้ยงได้ทันที ตอบพร้อมแหล่งอ้างอิงจากผู้เชี่ยวชาญ',
+      action: () => router.push('/chat'),
+      cta: 'ลองเลย',
+      color: '#0d9488',
+      bg: '#f0fdfa',
+    },
+    {
+      icon: '👥',
+      title: 'ชุมชนเจ้าของสัตว์เลี้ยง',
+      desc: 'แชร์ประสบการณ์ ถามตอบ และเรียนรู้จากคนที่เลี้ยงสัตว์เหมือนกัน',
+      action: () => router.push('/community'),
+      cta: 'ดูชุมชน',
+      color: '#7c3aed',
+      bg: '#faf5ff',
+    },
+    {
+      icon: '🚨',
+      title: 'ข้อมูลฉุกเฉิน',
+      desc: 'เบอร์โทรสัตวแพทย์ฉุกเฉิน อาการที่ต้องระวัง และ first aid guide',
+      action: () => router.push('/emergency'),
+      cta: 'ดูข้อมูล',
+      color: '#dc2626',
+      bg: '#fff1f2',
+    },
+  ];
 
-  if (!user) return null;
+  const faqs = [
+    { q: 'สุนัขกินองุ่นได้ไหม?', tag: '🐶' },
+    { q: 'แมวควรฉีดวัคซีนอะไรบ้าง?', tag: '🐱' },
+    { q: 'สัตว์เลี้ยงมีไข้ทำยังไง?', tag: '🌡️' },
+    { q: 'อาหารที่ห้ามให้สุนัขกิน', tag: '🚫' },
+    { q: 'วิธีดูแลลูกแมวแรกเกิด', tag: '🍼' },
+    { q: 'สัญญาณที่ต้องพาไปหาหมอด่วน', tag: '⚠️' },
+  ];
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <div style={{
+      background: '#f9fafb', minHeight: '100vh',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+    }}>
 
-          {/* Left Sidebar */}
-          <aside className="lg:col-span-1 space-y-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="font-semibold text-gray-900 mb-4">📊 สถิติล่าสุด</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center p-3 bg-teal-50 rounded-lg">
-                  <span className="text-sm text-gray-600">คำถามวันนี้</span>
-                  <span className="font-semibold text-teal-700">47</span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                  <span className="text-sm text-gray-600">AI ตอบแล้ว</span>
-                  <span className="font-semibold text-blue-700">89%</span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                  <span className="text-sm text-gray-600">ผู้ใช้ออนไลน์</span>
-                  <span className="font-semibold text-green-700">1.2K</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 border-l-4 border-l-red-500">
-              <h3 className="font-semibold text-red-700 mb-4">🚨 ติดต่อฉุกเฉิน</h3>
-              <div className="space-y-3">
-                <div className="p-3 bg-red-50 rounded-lg">
-                  <p className="font-semibold text-red-900">สัตวแพทย์ฉุกเฉิน</p>
-                  <p className="text-red-700 font-mono text-lg">1669</p>
-                </div>
-                <div className="p-3 bg-red-50 rounded-lg">
-                  <p className="font-semibold text-red-900">คลินิก 24 ชม.</p>
-                  <p className="text-red-700 font-mono">02-123-4567</p>
-                </div>
-              </div>
-            </div>
-          </aside>
-
-          {/* Main Feed */}
-          <section className="lg:col-span-2 space-y-6">
-
-            {/* Create Post Box */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="flex gap-4">
-                <div className="w-9 h-9 bg-teal-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
-                  {user.email?.charAt(0).toUpperCase()}
-                </div>
-                <div className="flex-1">
-                  <textarea
-                    placeholder="แบ่งปันประสบการณ์หรือถามคำถามเกี่ยวกับสัตว์เลี้ยง..."
-                    className="w-full border-0 resize-none focus:outline-none text-sm placeholder-gray-400 min-h-[80px] bg-transparent"
-                    rows={3}
-                  />
-                  <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-100">
-                    <div className="flex gap-2">
-                      <button className="p-2 text-gray-400 hover:text-teal-600 rounded-lg text-sm">📷 รูปภาพ</button>
-                      <button className="p-2 text-gray-400 hover:text-teal-600 rounded-lg text-sm">😊 อิโมจิ</button>
-                    </div>
-                    <button
-                      onClick={() => router.push('/community')}
-                      className="bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700"
-                    >
-                      โพสต์
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Sample Post 1 */}
-            <article className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="flex gap-4">
-                <div className="w-9 h-9 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">ม</div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-3">
-                    <h4 className="font-semibold text-gray-900">คุณมาลี รักสัตว์</h4>
-                    <span className="text-sm text-gray-400">· 2 ชั่วโมงที่แล้ว</span>
-                  </div>
-                  <p className="text-gray-800 mb-3">ลูกแมวอายุ 2 เดือนเริ่มกินอาหารแข็งได้แล้ว! 🐱 มีคำแนะนำเรื่องอาหารลูกแมวไหมคะ?</p>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center text-white text-xs font-bold">AI</div>
-                      <span className="font-semibold text-sm text-gray-900">Pet AI Assistant</span>
-                      <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full">✅ ยืนยันแล้ว</span>
-                    </div>
-                    <p className="text-gray-700 text-sm mb-2">ลูกแมวอายุ 2 เดือนควรได้รับอาหารสำหรับลูกแมวโดยเฉพาะที่มีโปรตีนสูง 30-35%</p>
-                    <p className="text-xs text-blue-600">📚 อ้างอิง: PetMD, VCA Hospitals, International Cat Care</p>
-                  </div>
-                  <div className="flex items-center gap-6 pt-3 border-t border-gray-100">
-                    <button className="flex items-center gap-1 text-gray-500 hover:text-teal-600 text-sm">💬 24</button>
-                    <button className="flex items-center gap-1 text-gray-500 hover:text-red-500 text-sm">❤️ 127</button>
-                  </div>
-                </div>
-              </div>
-            </article>
-
-            {/* Sample Post 2: Emergency */}
-            <article className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="flex gap-4">
-                <div className="w-9 h-9 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">ส</div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-3">
-                    <h4 className="font-semibold text-gray-900">คุณสมชาย ใจดี</h4>
-                    <span className="text-sm text-gray-400">· 15 นาทีที่แล้ว</span>
-                  </div>
-                  <p className="text-gray-800 mb-3">สุนัขกินยาเบื่อเข้าไป!!! ตอนนี้มีอาการชักด้วย ทำไงดีครับ? 🆘</p>
-                  <div className="bg-red-50 border border-red-300 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-lg">⚠️</span>
-                      <h5 className="font-bold text-red-900">ระบบตรวจจับเหตุฉุกเฉิน</h5>
-                    </div>
-                    <p className="text-red-800 text-sm mb-4">นี่คือภาวะฉุกเฉิน! ต้องการการช่วยเหลือทางการแพทย์ทันที</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <a href="tel:1669" className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-medium text-center hover:bg-red-600">📞 โทรฉุกเฉิน</a>
-                      <button onClick={() => router.push('/emergency')} className="bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-800">🗺️ ข้อมูลฉุกเฉิน</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </article>
-
-          </section>
-
-          {/* Right Sidebar */}
-          <aside className="lg:col-span-1 space-y-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="font-semibold text-gray-900 mb-4">🤖 ถาม Pet AI ด่วน</h3>
-              <div className="space-y-2">
-                {[
-                  { icon: '🚫', text: 'สุนัขกินอะไรไม่ได้บ้าง?' },
-                  { icon: '😿', text: 'แมวเครียดมีอาการอย่างไร?' },
-                  { icon: '💉', text: 'ตารางวัคซีนสัตว์เลี้ยง' },
-                  { icon: '🦴', text: 'อาหารที่เหมาะกับสัตว์อายุมาก' },
-                  { icon: '🛁', text: 'วิธีการอาบน้ำสัตว์เลี้ยงที่ถูกต้อง' },
-                ].map((item, i) => (
-                  <button
-                    key={i}
-                    onClick={() => router.push('/chat')}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg text-left"
-                  >
-                    <span>{item.icon}</span>
-                    <span>{item.text}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="font-semibold text-gray-900 mb-4">🔥 เทรนด์</h3>
-              <div className="space-y-3">
-                {[
-                  { tag: '#แมวไม่กินข้าว', count: '2.3K การสนทนา' },
-                  { tag: '#สุนัขท้องเสีย', count: '1.8K การสนทนา' },
-                  { tag: '#ดูแลสัตว์วัยทอง', count: '945 การสนทนา' },
-                ].map((item, i) => (
-                  <div key={i} className="p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
-                    <p className="font-semibold text-sm text-gray-900">{item.tag}</p>
-                    <p className="text-xs text-gray-500">{item.count}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </aside>
-
+      {/* Hero */}
+      <section style={{background: 'white', borderBottom: '1px solid #f3f4f6', padding: '72px 24px'}}>
+        <div style={{maxWidth: '600px', margin: '0 auto', textAlign: 'center'}}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: '6px',
+            background: '#f0fdfa', border: '1px solid #99f6e4',
+            borderRadius: '999px', padding: '4px 14px',
+            fontSize: '12px', fontWeight: '600', color: '#0f766e',
+            marginBottom: '28px',
+          }}>
+            <span style={{width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', display: 'inline-block'}} />
+            AI พร้อมตอบตลอด 24 ชั่วโมง
+          </div>
+          <h1 style={{
+            fontSize: '44px', fontWeight: '800', color: '#111827',
+            letterSpacing: '-0.04em', lineHeight: '1.1', margin: '0 0 20px',
+          }}>
+            ดูแลสัตว์เลี้ยง<br/>
+            <span style={{color: '#0d9488'}}>ได้ง่ายขึ้น</span>
+          </h1>
+          <p style={{fontSize: '16px', color: '#6b7280', lineHeight: '1.7', margin: '0 0 36px'}}>
+            แพลตฟอร์มที่รวม AI assistant ชุมชนเจ้าของสัตว์เลี้ยง
+            และข้อมูลฉุกเฉินไว้ในที่เดียว
+          </p>
+          <div style={{display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap'}}>
+            <button
+              onClick={() => router.push('/chat')}
+              style={{
+                background: '#0d9488', color: 'white', border: 'none',
+                borderRadius: '10px', padding: '12px 28px', fontSize: '15px',
+                fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit',
+                boxShadow: '0 4px 14px rgba(13,148,136,0.3)',
+              }}
+            >
+              ถาม AI เลย →
+            </button>
+            {!user && (
+              <button
+                onClick={() => router.push('/login')}
+                style={{
+                  background: 'white', color: '#374151',
+                  border: '1px solid #e5e7eb', borderRadius: '10px',
+                  padding: '12px 28px', fontSize: '15px',
+                  fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit',
+                }}
+              >
+                สมัครสมาชิกฟรี
+              </button>
+            )}
+          </div>
         </div>
-      </main>
+      </section>
 
-      <footer className="border-t border-gray-200 bg-white mt-16">
-        <div className="max-w-7xl mx-auto px-6 py-8 text-center">
-          <p className="text-sm text-gray-500">© 2024 Pet Health. All rights reserved.</p>
+      {/* Features */}
+      <section style={{maxWidth: '900px', margin: '0 auto', padding: '60px 24px'}}>
+        <p style={{
+          textAlign: 'center', fontSize: '12px', fontWeight: '600',
+          color: '#9ca3af', letterSpacing: '0.1em',
+          textTransform: 'uppercase', margin: '0 0 32px',
+        }}>
+          ฟีเจอร์หลัก
+        </p>
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px'}}>
+          {features.map((f, i) => (
+            <div
+              key={i}
+              onClick={f.action}
+              style={{
+                background: 'white', borderRadius: '16px',
+                border: '1px solid #e5e7eb', padding: '24px',
+                cursor: 'pointer', transition: 'all 0.2s ease',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+              }}
+              onMouseEnter={e => {
+                const el = e.currentTarget as HTMLDivElement;
+                el.style.boxShadow = '0 8px 24px rgba(0,0,0,0.08)';
+                el.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={e => {
+                const el = e.currentTarget as HTMLDivElement;
+                el.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)';
+                el.style.transform = 'translateY(0)';
+              }}
+            >
+              <div style={{
+                width: '44px', height: '44px', background: f.bg,
+                borderRadius: '12px', display: 'flex',
+                alignItems: 'center', justifyContent: 'center',
+                fontSize: '22px', marginBottom: '16px',
+              }}>{f.icon}</div>
+              <h3 style={{fontSize: '15px', fontWeight: '700', color: '#111827', margin: '0 0 8px', letterSpacing: '-0.02em'}}>
+                {f.title}
+              </h3>
+              <p style={{fontSize: '13px', color: '#6b7280', lineHeight: '1.6', margin: '0 0 20px'}}>
+                {f.desc}
+              </p>
+              <span style={{fontSize: '13px', fontWeight: '600', color: f.color}}>
+                {f.cta} →
+              </span>
+            </div>
+          ))}
         </div>
+      </section>
+
+      {/* Quick Questions */}
+      <section style={{background: 'white', borderTop: '1px solid #f3f4f6', borderBottom: '1px solid #f3f4f6', padding: '60px 24px'}}>
+        <div style={{maxWidth: '680px', margin: '0 auto'}}>
+          <h2 style={{textAlign: 'center', fontSize: '22px', fontWeight: '700', color: '#111827', letterSpacing: '-0.03em', margin: '0 0 6px'}}>
+            คำถามยอดนิยม
+          </h2>
+          <p style={{textAlign: 'center', fontSize: '14px', color: '#9ca3af', margin: '0 0 32px'}}>
+            กดเพื่อถาม AI ได้ทันที
+          </p>
+          <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px'}}>
+            {faqs.map((faq, i) => (
+              <button
+                key={i}
+                onClick={() => router.push('/chat')}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  padding: '12px 16px', borderRadius: '10px',
+                  border: '1px solid #e5e7eb', background: '#f9fafb',
+                  cursor: 'pointer', textAlign: 'left',
+                  transition: 'all 0.15s ease', fontFamily: 'inherit',
+                }}
+                onMouseEnter={e => {
+                  const el = e.currentTarget as HTMLButtonElement;
+                  el.style.background = '#f0fdfa';
+                  el.style.borderColor = '#99f6e4';
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget as HTMLButtonElement;
+                  el.style.background = '#f9fafb';
+                  el.style.borderColor = '#e5e7eb';
+                }}
+              >
+                <span style={{fontSize: '18px', flexShrink: 0}}>{faq.tag}</span>
+                <span style={{fontSize: '13px', color: '#374151', fontWeight: '500', lineHeight: '1.4'}}>{faq.q}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA — แสดงเฉพาะตอนยังไม่ login */}
+      {!user && (
+        <section style={{padding: '72px 24px', textAlign: 'center'}}>
+          <div style={{maxWidth: '440px', margin: '0 auto'}}>
+            <h2 style={{fontSize: '26px', fontWeight: '700', color: '#111827', letterSpacing: '-0.03em', margin: '0 0 12px'}}>
+              เริ่มใช้งานฟรีเลย
+            </h2>
+            <p style={{fontSize: '15px', color: '#6b7280', margin: '0 0 28px', lineHeight: '1.6'}}>
+              สมัครฟรีเพื่อโพสต์ในชุมชนและบันทึกประวัติการสนทนากับ AI
+            </p>
+            <button
+              onClick={() => router.push('/login')}
+              style={{
+                background: '#111827', color: 'white', border: 'none',
+                borderRadius: '10px', padding: '13px 32px', fontSize: '15px',
+                fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >
+              สมัครสมาชิกฟรี
+            </button>
+          </div>
+        </section>
+      )}
+
+      <footer style={{borderTop: '1px solid #f3f4f6', padding: '24px', textAlign: 'center'}}>
+        <p style={{fontSize: '12px', color: '#9ca3af', margin: 0}}>
+          © 2024 PetHealth — ข้อมูลนี้ไม่ใช่การวินิจฉัยโรค ควรปรึกษาสัตวแพทย์เสมอ
+        </p>
       </footer>
-
     </div>
   );
 }
