@@ -31,14 +31,30 @@ export default function CommunityPage() {
   useEffect(() => { fetchPosts(); }, []);
 
   const fetchPosts = async () => {
-    setFetching(true);
-    try {
-      const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
-      const snap = await getDocs(q);
-      setPosts(snap.docs.map(d => ({ id: d.id, likes: [], ...d.data() })) as Post[]);
-    } catch (e) { console.error(e); }
-    setFetching(false);
-  };
+  setFetching(true);
+  try {
+    const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
+    const snap = await getDocs(q);
+
+    const posts: Post[] = snap.docs.map((d) => {
+      const data = d.data();
+
+      return {
+        id: d.id,
+        content: data.content,
+        authorEmail: data.authorEmail,
+        petType: data.petType,
+        createdAt: data.createdAt,
+        likes: data.likes ?? []
+      };
+    });
+
+    setPosts(posts);
+  } catch (e) {
+    console.error(e);
+  }
+  setFetching(false);
+};
 
   const handlePost = async () => {
     if (!user) { router.push('/login'); return; }
