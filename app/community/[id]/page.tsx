@@ -7,6 +7,7 @@ import {
   doc, getDoc, collection, addDoc, getDocs,
   deleteDoc, orderBy, query, serverTimestamp,
   updateDoc, arrayUnion, arrayRemove, increment,
+  runTransaction,
 } from 'firebase/firestore';
 
 interface Post {
@@ -24,6 +25,7 @@ interface Comment {
   content: string;
   authorEmail: string;
   createdAt: any;
+  updatedAt?: any;   // เพิ่มตรงนี้
 }
 
 export default function PostDetailPage() {
@@ -38,6 +40,10 @@ export default function PostDetailPage() {
   const [loadingPost, setLoadingPost] = useState(true);
   const [loadingComments, setLoadingComments] = useState(true);
   const [posting, setPosting] = useState(false);
+
+  // state สำหรับแก้ไขความคิดเห็น
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
 
   useEffect(() => {
     fetchPost();
@@ -78,6 +84,7 @@ export default function PostDetailPage() {
           content: raw.content,
           authorEmail: raw.authorEmail,
           createdAt: raw.createdAt,
+          updatedAt: raw.updatedAt,   // ดึง updatedAt ด้วย
         };
       }));
     } catch (e) { console.error(e); }
@@ -106,14 +113,64 @@ export default function PostDetailPage() {
     setPosting(false);
   };
 
+  const handleEditComment = async (commentId: string) => {
+    if (!user || !editText.trim()) return;
+    try {
+      const commentRef = doc(db, 'posts', postId, 'comments', commentId);
+      await updateDoc(commentRef, {
+        content: editText.trim(),
+        updatedAt: serverTimestamp(),
+      });
+      // อัปเดต state ฝั่ง client
+      setComments(prev =>
+        prev.map(c =>
+          c.id === commentId
+            ? { ...c, content: editText.trim(), updatedAt: new Date() }
+            : c
+        )
+      );
+      setEditingCommentId(null);
+      setEditText('');
+    } catch (error) {
+      console.error('Error editing comment:', error);
+    }
+  };
+
   const handleDeleteComment = async (commentId: string) => {
-    await deleteDoc(doc(db, 'posts', postId, 'comments', commentId));
-    // ✅ -1 commentCount ใน post document
-    await updateDoc(doc(db, 'posts', postId), {
-      commentCount: increment(-1),
-    });
-    setComments(c => c.filter(x => x.id !== commentId));
-    setPost(p => p ? { ...p, commentCount: Math.max(0, (p.commentCount ?? 1) - 1) } : p);
+    if (!user) return;
+    try {
+      const postRef = doc(db, 'posts', postId);
+      const commentRef = doc(db, 'posts', postId, 'comments', commentId);
+
+      await runTransaction(db, async (transaction) => {
+        // อ่านค่า commentCount ปัจจุบันจาก post
+        const postDoc = await transaction.get(postRef);
+        if (!postDoc.exists()) {
+          throw new Error('Post not found');
+        }
+        const currentCount = postDoc.data().commentCount || 0;
+
+        // ลดค่า commentCount ต่อเมื่อมากกว่า 0
+        if (currentCount > 0) {
+          transaction.update(postRef, { commentCount: currentCount - 1 });
+        } else {
+          // กรณีค่าเป็น 0 (ไม่ควรเกิด) ก็แค่ log ทิ้งไว้
+          console.warn('commentCount already zero, skipping decrement');
+        }
+
+        // ลบ comment document
+        transaction.delete(commentRef);
+      });
+
+      // อัปเดต state ฝั่ง client
+      setComments(prev => prev.filter(c => c.id !== commentId));
+      setPost(prev => prev ? { 
+        ...prev, 
+        commentCount: Math.max(0, (prev.commentCount ?? 0) - 1) 
+      } : prev);
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+    }
   };
 
   const handleLike = async () => {
@@ -261,15 +318,63 @@ export default function PostDetailPage() {
                           <div>
                             <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{comment.authorEmail?.split('@')[0]}</span>
                             <span style={{ fontSize: '11px', color: '#9ca3af', marginLeft: '6px' }}>· {timeAgo(comment.createdAt)}</span>
+                            {comment.updatedAt && (
+                              <span style={{ fontSize: '11px', color: '#9ca3af', marginLeft: '4px' }}>(แก้ไข)</span>
+                            )}
                           </div>
-                          {isOwner && (
-                            <button onClick={() => handleDeleteComment(comment.id)} style={{ background: 'none', border: 'none', color: '#d1d5db', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit', padding: '2px 6px', borderRadius: '4px', transition: 'color 0.15s' }}
-                              onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = '#ef4444'}
-                              onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = '#d1d5db'}
-                            >ลบ</button>
+                          {isOwner && editingCommentId !== comment.id && (
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              <button
+                                onClick={() => { setEditingCommentId(comment.id); setEditText(comment.content); }}
+                                style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '12px', cursor: 'pointer', padding: '2px 6px', borderRadius: '4px', transition: 'color 0.15s' }}
+                                onMouseEnter={e => (e.currentTarget.style.color = '#2563eb')}
+                                onMouseLeave={e => (e.currentTarget.style.color = '#9ca3af')}
+                              >
+                                แก้ไข
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (window.confirm('ลบความคิดเห็นนี้ใช่หรือไม่?')) {
+                                    handleDeleteComment(comment.id);
+                                  }
+                                }}
+                                style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '12px', cursor: 'pointer', padding: '2px 6px', borderRadius: '4px', transition: 'color 0.15s' }}
+                                onMouseEnter={e => (e.currentTarget.style.color = '#ef4444')}
+                                onMouseLeave={e => (e.currentTarget.style.color = '#9ca3af')}
+                              >
+                                ลบ
+                              </button>
+                            </div>
                           )}
                         </div>
-                        <p style={{ fontSize: '14px', color: '#374151', lineHeight: '1.6', margin: 0, wordBreak: 'break-word' }}>{comment.content}</p>
+
+                        {editingCommentId === comment.id ? (
+                          <div style={{ marginTop: '8px' }}>
+                            <textarea
+                              value={editText}
+                              onChange={e => setEditText(e.target.value)}
+                              rows={2}
+                              style={{ width: '100%', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '8px 10px', fontSize: '14px', fontFamily: 'inherit', resize: 'none', outline: 'none', boxSizing: 'border-box' }}
+                            />
+                            <div style={{ display: 'flex', gap: '8px', marginTop: '8px', justifyContent: 'flex-end' }}>
+                              <button
+                                onClick={() => setEditingCommentId(null)}
+                                style={{ padding: '5px 12px', borderRadius: '6px', border: '1px solid #e5e7eb', background: 'white', color: '#374151', fontSize: '12px', fontWeight: '500', cursor: 'pointer' }}
+                              >
+                                ยกเลิก
+                              </button>
+                              <button
+                                onClick={() => handleEditComment(comment.id)}
+                                disabled={!editText.trim()}
+                                style={{ padding: '5px 12px', borderRadius: '6px', border: 'none', background: editText.trim() ? '#0d9488' : '#e5e7eb', color: editText.trim() ? 'white' : '#9ca3af', fontSize: '12px', fontWeight: '600', cursor: editText.trim() ? 'pointer' : 'not-allowed' }}
+                              >
+                                บันทึก
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p style={{ fontSize: '14px', color: '#374151', lineHeight: '1.6', margin: 0, wordBreak: 'break-word' }}>{comment.content}</p>
+                        )}
                       </div>
                     </div>
                   </div>
