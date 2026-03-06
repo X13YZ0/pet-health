@@ -184,6 +184,7 @@ export default function Navbar(): React.ReactNode | null {
     { href: '/community', label: 'ชุมชน' },
     { href: '/chat', label: 'AI Assistant' },
     { href: '/emergency', label: 'ฉุกเฉิน', danger: true },
+    { label: 'Health Tracker', href: '/tracker' },
     { href: '/about', label: 'เกี่ยวกับ' },
   ];
 

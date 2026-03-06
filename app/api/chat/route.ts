@@ -7,6 +7,22 @@ const knowledgeBase = JSON.parse(
   readFileSync(join(process.cwd(), 'public/knowledge_base.json'), 'utf-8')
 );
 
+// ✅ validate URL จริง — ต้อง https และ domain จริง ไม่ใช่ localhost หรือ example.com
+function isValidUrl(url: string): boolean {
+  try {
+    const u = new URL(url);
+    return (
+      u.protocol === 'https:' &&
+      !u.hostname.includes('example') &&
+      !u.hostname.includes('localhost') &&
+      !u.hostname.includes('placeholder') &&
+      u.hostname.includes('.')
+    );
+  } catch {
+    return false;
+  }
+}
+
 function searchKB(message: string) {
   const lower = message.toLowerCase();
 
@@ -62,7 +78,7 @@ export async function POST(req: NextRequest) {
         message: '🚨 ตรวจพบอาการฉุกเฉิน! กรุณาติดต่อสัตวแพทย์ทันที อย่ารอ!',
         contacts: [
           { name: 'สายด่วนสัตวแพทย์', number: '1669' },
-          { name: 'คลินิกฉุกเฉิน 24 ชม.', number: '02-123-4567' },
+          { name: 'คลินิกฉุกเฉิน 24 ชม.', number: '02-579-7692' },
         ],
       });
     }
@@ -74,41 +90,69 @@ export async function POST(req: NextRequest) {
 
     if (kbResults.length > 0) {
       context = kbResults.map((r: any) => r.content).join('\n\n');
-      citations = kbResults.map((r: any) => ({
-        title: r.topic,
-        source: r.source,
-        url: r.sourceUrl,
-      }));
-    } else {
-      // STEP 3: Tavily Search (fallback)
+
+      // ✅ กรอง citation ที่ URL จริงเท่านั้น ถ้า URL เฟคไม่แสดง
+      citations = kbResults
+        .filter((r: any) => isValidUrl(r.sourceUrl))
+        .map((r: any) => ({
+          title: r.topic,
+          source: new URL(r.sourceUrl).hostname.replace('www.', ''),
+          url: r.sourceUrl,
+        }));
+    }
+
+    // STEP 3: Tavily Search
+    // ทำเสมอถ้า KB ไม่มีผล หรือ KB มีผลแต่ citations URL เฟคหมด
+    if (!context || citations.length === 0) {
       try {
         const tavilyRes = await fetch('https://api.tavily.com/search', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             api_key: process.env.TAVILY_API_KEY,
-            query: `${message} pet dog cat veterinary health`,
+            query: `${message} สัตว์เลี้ยง สุขภาพ สัตวแพทย์`,
             max_results: 3,
-            include_domains: ['aspca.org', 'avma.org', 'akc.org', 'vcahospitals.com', 'icatcare.org'],
+            search_depth: 'basic',
+            include_domains: [
+              'vcahospitals.com',
+              'aspca.org',
+              'akc.org',
+              'avma.org',
+              'icatcare.org',
+              'petmd.com',
+              'vet.cornell.edu',
+            ],
           }),
         });
+
         const tavilyData = await tavilyRes.json();
+
         if (tavilyData.results?.length > 0) {
-          context = tavilyData.results.map((r: any) => r.content).join('\n\n');
-          citations = tavilyData.results.map((r: any) => ({
-            title: r.title,
-            source: new URL(r.url).hostname,
-            url: r.url,
-          }));
+          // ใช้ Tavily context ถ้า KB ว่าง
+          if (!context) {
+            context = tavilyData.results.map((r: any) => r.content).join('\n\n');
+          }
+          // ✅ Tavily URL จริงเสมอ แต่ validate ไว้ด้วย
+          const tavilyCitations = tavilyData.results
+            .filter((r: any) => isValidUrl(r.url))
+            .map((r: any) => ({
+              title: r.title?.slice(0, 80) || 'แหล่งอ้างอิง',
+              source: new URL(r.url).hostname.replace('www.', ''),
+              url: r.url,
+            }));
+
+          // merge citations — Tavily ไว้หลัง KB
+          citations = [...citations, ...tavilyCitations].slice(0, 4);
         }
       } catch (err) {
         console.log('Tavily error:', err);
       }
     }
 
-    if (!context) context = 'ไม่พบข้อมูลที่เกี่ยวข้อง';
+    if (!context) context = 'ไม่พบข้อมูลที่เกี่ยวข้องในฐานความรู้';
 
     // STEP 4: Gemini AI
+    // ✅ เปลี่ยนเป็น gemini-2.5-flash — stable กว่า และ free tier quota มากกว่า
     const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
@@ -117,12 +161,10 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `คุณคือผู้ช่วยให้ข้อมูลเกี่ยวกับสุขภาพสัตว์เลี้ยง
-ตอบคำถามโดยใช้ข้อมูลจาก Context ที่ให้มาเป็นหลัก
-ถ้า Context ไม่มีข้อมูลที่เกี่ยวข้อง ให้ตอบจากความรู้ทั่วไปเกี่ยวกับสัตว์เลี้ยงได้
-ห้ามวินิจฉัยโรคหรือสั่งยา
-ถ้าอาการรุนแรงให้แนะนำพบสัตวแพทย์
-ตอบเป็นภาษาเดียวกับคำถาม ให้กระชับและเป็นประโยชน์
+              text: `คุณคือผู้ช่วยให้ข้อมูลเกี่ยวกับสุขภาพสัตว์เลี้ยง ตอบเป็นภาษาไทยเสมอ
+ใช้ข้อมูลจาก Context เป็นหลัก ถ้า Context ไม่เพียงพอให้ใช้ความรู้ทั่วไป
+ห้ามวินิจฉัยโรคหรือสั่งยา ถ้าอาการรุนแรงให้แนะนำพบสัตวแพทย์
+ตอบกระชับ ชัดเจน ไม่เกิน 200 คำ
 
 Context:
 ${context}
@@ -130,27 +172,46 @@ ${context}
 คำถาม: ${message}`,
             }],
           }],
+          generationConfig: {
+            maxOutputTokens: 512,
+            temperature: 0.3,
+          },
         }),
       }
     );
 
     const geminiData = await geminiRes.json();
 
+    // ✅ error handling ครบ
     if (geminiData.error) {
+      const code = geminiData.error.code;
+      const status = geminiData.error.status;
+
+      if (code === 429 || status === 'RESOURCE_EXHAUSTED') {
+        return NextResponse.json({
+          type: 'answer',
+          message: '⏳ AI มีผู้ใช้งานจำนวนมากในขณะนี้ กรุณารอ 1 นาทีแล้วลองใหม่ครับ',
+          citations: [],
+        });
+      }
+
+      console.error('Gemini error:', geminiData.error);
       return NextResponse.json({
         type: 'answer',
-        message: geminiData.error.code === 429
-          ? '⏳ AI กำลังมีผู้ใช้งานจำนวนมาก กรุณารอสักครู่แล้วลองใหม่'
-          : '❌ เกิดข้อผิดพลาดจาก AI กรุณาลองใหม่',
+        message: '❌ เกิดข้อผิดพลาดจาก AI กรุณาลองใหม่',
         citations: [],
       });
     }
 
     const reply =
       geminiData.candidates?.[0]?.content?.parts?.[0]?.text ||
-      'ไม่สามารถสร้างคำตอบได้';
+      'ไม่สามารถสร้างคำตอบได้ กรุณาลองใหม่';
 
-    return NextResponse.json({ type: 'answer', message: reply, citations });
+    return NextResponse.json({
+      type: 'answer',
+      message: reply,
+      citations,
+    });
 
   } catch (error) {
     console.error('Server error:', error);

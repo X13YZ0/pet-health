@@ -16,6 +16,7 @@ interface Post {
   petType: string;
   createdAt: any;
   likes: string[];
+  commentCount: number; // ✅ เพิ่ม
 }
 
 export default function CommunityPage() {
@@ -45,6 +46,7 @@ export default function CommunityPage() {
           petType: raw.petType,
           createdAt: raw.createdAt,
           likes: raw.likes ?? [],
+          commentCount: raw.commentCount ?? 0, // ✅ ดึง commentCount
         };
       });
       setPosts(data);
@@ -62,6 +64,7 @@ export default function CommunityPage() {
         authorEmail: user.email,
         createdAt: serverTimestamp(),
         likes: [],
+        commentCount: 0, // ✅ เริ่มต้นที่ 0
       });
       setContent('');
       await fetchPosts();
@@ -70,13 +73,13 @@ export default function CommunityPage() {
   };
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
-    e.stopPropagation(); // ไม่ให้ navigate ไป detail
+    e.stopPropagation();
     await deleteDoc(doc(db, 'posts', id));
     setPosts(p => p.filter(x => x.id !== id));
   };
 
   const handleLike = async (e: React.MouseEvent, post: Post) => {
-    e.stopPropagation(); // ไม่ให้ navigate ไป detail
+    e.stopPropagation();
     if (!user) { router.push('/login'); return; }
     const ref = doc(db, 'posts', post.id);
     const liked = post.likes?.includes(user.email!);
@@ -85,9 +88,7 @@ export default function CommunityPage() {
     });
     setPosts(p => p.map(x => x.id !== post.id ? x : {
       ...x,
-      likes: liked
-        ? x.likes.filter(e => e !== user.email)
-        : [...(x.likes || []), user.email!],
+      likes: liked ? x.likes.filter(e => e !== user.email) : [...(x.likes || []), user.email!],
     }));
   };
 
@@ -124,7 +125,7 @@ export default function CommunityPage() {
       <main style={{ maxWidth: '1100px', margin: '0 auto', padding: '32px 24px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '24px', alignItems: 'start' }}>
 
-          {/* ===== LEFT: Main Feed ===== */}
+          {/* ===== LEFT ===== */}
           <div>
             <div style={{ marginBottom: '20px' }}>
               <h1 style={{ fontSize: '22px', fontWeight: '700', color: '#111827', letterSpacing: '-0.03em', margin: '0 0 4px' }}>ชุมชน</h1>
@@ -156,31 +157,13 @@ export default function CommunityPage() {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '14px', paddingTop: '14px', borderTop: '1px solid #f3f4f6' }}>
                     <div style={{ display: 'flex', gap: '6px' }}>
-                      {[
-                        { value: 'dog', icon: '🐶', label: 'สุนัข' },
-                        { value: 'cat', icon: '🐱', label: 'แมว' },
-                        { value: 'other', icon: '🐾', label: 'อื่นๆ' },
-                      ].map(pt => (
-                        <button key={pt.value} onClick={() => setPetType(pt.value)} style={{
-                          padding: '5px 12px', borderRadius: '999px', border: '1px solid',
-                          borderColor: petType === pt.value ? '#0d9488' : '#e5e7eb',
-                          background: petType === pt.value ? '#f0fdfa' : 'white',
-                          color: petType === pt.value ? '#0d9488' : '#6b7280',
-                          fontSize: '12px', fontWeight: '500', cursor: 'pointer',
-                          fontFamily: 'inherit', transition: 'all 0.15s',
-                        }}>
+                      {[{ value: 'dog', icon: '🐶', label: 'สุนัข' }, { value: 'cat', icon: '🐱', label: 'แมว' }, { value: 'other', icon: '🐾', label: 'อื่นๆ' }].map(pt => (
+                        <button key={pt.value} onClick={() => setPetType(pt.value)} style={{ padding: '5px 12px', borderRadius: '999px', border: '1px solid', borderColor: petType === pt.value ? '#0d9488' : '#e5e7eb', background: petType === pt.value ? '#f0fdfa' : 'white', color: petType === pt.value ? '#0d9488' : '#6b7280', fontSize: '12px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}>
                           {pt.icon} {pt.label}
                         </button>
                       ))}
                     </div>
-                    <button onClick={handlePost} disabled={posting || !content.trim()} style={{
-                      background: posting || !content.trim() ? '#e5e7eb' : '#0d9488',
-                      color: posting || !content.trim() ? '#9ca3af' : 'white',
-                      border: 'none', borderRadius: '9px', padding: '8px 20px',
-                      fontSize: '13px', fontWeight: '600',
-                      cursor: posting || !content.trim() ? 'not-allowed' : 'pointer',
-                      fontFamily: 'inherit', transition: 'all 0.15s',
-                    }}>
+                    <button onClick={handlePost} disabled={posting || !content.trim()} style={{ background: posting || !content.trim() ? '#e5e7eb' : '#0d9488', color: posting || !content.trim() ? '#9ca3af' : 'white', border: 'none', borderRadius: '9px', padding: '8px 20px', fontSize: '13px', fontWeight: '600', cursor: posting || !content.trim() ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}>
                       {posting ? 'กำลังโพสต์...' : 'โพสต์'}
                     </button>
                   </div>
@@ -191,9 +174,7 @@ export default function CommunityPage() {
                   <button onClick={() => router.push('/login')} style={{ flex: 1, padding: '10px 16px', borderRadius: '999px', border: '1.5px solid #e5e7eb', background: '#f9fafb', color: '#9ca3af', fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
                     เข้าสู่ระบบเพื่อแบ่งปันประสบการณ์...
                   </button>
-                  <a href="/login" style={{ padding: '8px 18px', borderRadius: '9px', background: '#0d9488', color: 'white', fontSize: '13px', fontWeight: '600', textDecoration: 'none', flexShrink: 0 }}>
-                    เข้าสู่ระบบ
-                  </a>
+                  <a href="/login" style={{ padding: '8px 18px', borderRadius: '9px', background: '#0d9488', color: 'white', fontSize: '13px', fontWeight: '600', textDecoration: 'none', flexShrink: 0 }}>เข้าสู่ระบบ</a>
                 </div>
               )}
             </div>
@@ -201,15 +182,7 @@ export default function CommunityPage() {
             {/* Filters */}
             <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', flexWrap: 'wrap' }}>
               {filterTabs.map(f => (
-                <button key={f.value} onClick={() => setFilter(f.value)} style={{
-                  padding: '6px 14px', borderRadius: '999px', border: '1px solid',
-                  borderColor: filter === f.value ? '#0d9488' : '#e5e7eb',
-                  background: filter === f.value ? '#f0fdfa' : 'white',
-                  color: filter === f.value ? '#0d9488' : '#6b7280',
-                  fontSize: '13px', fontWeight: '500', cursor: 'pointer',
-                  fontFamily: 'inherit', transition: 'all 0.15s',
-                  display: 'flex', alignItems: 'center', gap: '5px',
-                }}>
+                <button key={f.value} onClick={() => setFilter(f.value)} style={{ padding: '6px 14px', borderRadius: '999px', border: '1px solid', borderColor: filter === f.value ? '#0d9488' : '#e5e7eb', background: filter === f.value ? '#f0fdfa' : 'white', color: filter === f.value ? '#0d9488' : '#6b7280', fontSize: '13px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: '5px' }}>
                   {f.label}
                   <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '999px', background: filter === f.value ? '#0d9488' : '#f3f4f6', color: filter === f.value ? 'white' : '#9ca3af', fontWeight: '600' }}>
                     {f.count}
@@ -233,23 +206,10 @@ export default function CommunityPage() {
                   const pet = petLabel(post.petType);
                   const isOwner = user && post.authorEmail === user.email;
                   return (
-                    <article
-                      key={post.id}
-                      onClick={() => router.push(`/community/${post.id}`)}
-                      style={{
-                        background: 'white', borderRadius: '16px',
-                        border: '1px solid #e5e7eb', padding: '18px 20px',
-                        boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
-                        cursor: 'pointer', transition: 'all 0.15s ease',
-                      }}
-                      onMouseEnter={e => {
-                        (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)';
-                        (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)';
-                      }}
-                      onMouseLeave={e => {
-                        (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.05)';
-                        (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
-                      }}
+                    <article key={post.id} onClick={() => router.push(`/community/${post.id}`)}
+                      style={{ background: 'white', borderRadius: '16px', border: '1px solid #e5e7eb', padding: '18px 20px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)', cursor: 'pointer', transition: 'all 0.15s ease' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.05)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}
                     >
                       <div style={{ display: 'flex', gap: '12px' }}>
                         <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: avatarColor(post.authorEmail), color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '14px', flexShrink: 0 }}>
@@ -258,44 +218,29 @@ export default function CommunityPage() {
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', gap: '8px' }}>
                             <div>
-                              <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>
-                                {post.authorEmail?.split('@')[0]}
-                              </span>
+                              <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{post.authorEmail?.split('@')[0]}</span>
                               <span style={{ fontSize: '12px', color: '#9ca3af', marginLeft: '6px' }}>· {timeAgo(post.createdAt)}</span>
                             </div>
                             <span style={{ fontSize: '11px', fontWeight: '600', padding: '3px 9px', borderRadius: '999px', background: pet.bg, color: pet.color, flexShrink: 0 }}>
                               {pet.icon} {pet.label}
                             </span>
                           </div>
-
-                          <p style={{ fontSize: '14px', color: '#374151', lineHeight: '1.65', margin: '0 0 12px', wordBreak: 'break-word',
-                            display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                          }}>
+                          <p style={{ fontSize: '14px', color: '#374151', lineHeight: '1.65', margin: '0 0 12px', wordBreak: 'break-word', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                             {post.content}
                           </p>
-
                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', paddingTop: '10px', borderTop: '1px solid #f9fafb' }}>
-                            <button
-                              onClick={e => handleLike(e, post)}
-                              style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '5px 10px', borderRadius: '7px', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: liked ? '#fef2f2' : 'transparent', color: liked ? '#ef4444' : '#9ca3af', fontSize: '13px', fontWeight: '500', transition: 'all 0.15s' }}
-                            >
+                            <button onClick={e => handleLike(e, post)} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '5px 10px', borderRadius: '7px', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: liked ? '#fef2f2' : 'transparent', color: liked ? '#ef4444' : '#9ca3af', fontSize: '13px', fontWeight: '500', transition: 'all 0.15s' }}>
                               {liked ? '❤️' : '🤍'} {post.likes?.length || 0}
                             </button>
-
-                            {/* Comment count hint */}
+                            {/* ✅ แสดง commentCount จริง */}
                             <span style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '5px 10px', color: '#9ca3af', fontSize: '13px' }}>
-                              💬 ดูความคิดเห็น
+                              💬 {post.commentCount > 0 ? post.commentCount : 'ความคิดเห็น'}
                             </span>
-
                             {isOwner && (
-                              <button
-                                onClick={e => handleDelete(e, post.id)}
-                                style={{ marginLeft: 'auto', padding: '5px 10px', borderRadius: '7px', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: 'transparent', color: '#d1d5db', fontSize: '12px', transition: 'all 0.15s' }}
+                              <button onClick={e => handleDelete(e, post.id)} style={{ marginLeft: 'auto', padding: '5px 10px', borderRadius: '7px', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: 'transparent', color: '#d1d5db', fontSize: '12px', transition: 'all 0.15s' }}
                                 onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = '#ef4444'}
                                 onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = '#d1d5db'}
-                              >
-                                ลบ
-                              </button>
+                              >ลบ</button>
                             )}
                           </div>
                         </div>
@@ -340,12 +285,8 @@ export default function CommunityPage() {
 
             <div style={{ background: '#fef2f2', borderRadius: '14px', border: '1px solid #fecaca', padding: '18px' }}>
               <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#991b1b', margin: '0 0 10px' }}>🚨 ฉุกเฉิน?</h3>
-              <a href="tel:1669" style={{ display: 'block', textAlign: 'center', background: '#ef4444', color: 'white', padding: '10px', borderRadius: '9px', textDecoration: 'none', fontSize: '14px', fontWeight: '700', marginBottom: '8px' }}>
-                📞 โทร 1669
-              </a>
-              <a href="/emergency" style={{ display: 'block', textAlign: 'center', color: '#dc2626', fontSize: '12px', textDecoration: 'none', fontWeight: '500' }}>
-                ดูข้อมูลฉุกเฉินเพิ่มเติม →
-              </a>
+              <a href="tel:1669" style={{ display: 'block', textAlign: 'center', background: '#ef4444', color: 'white', padding: '10px', borderRadius: '9px', textDecoration: 'none', fontSize: '14px', fontWeight: '700', marginBottom: '8px' }}>📞 โทร 1669</a>
+              <a href="/emergency" style={{ display: 'block', textAlign: 'center', color: '#dc2626', fontSize: '12px', textDecoration: 'none', fontWeight: '500' }}>ดูข้อมูลฉุกเฉินเพิ่มเติม →</a>
             </div>
           </aside>
 

@@ -6,7 +6,7 @@ import { db } from '@/lib/firebase';
 import {
   doc, getDoc, collection, addDoc, getDocs,
   deleteDoc, orderBy, query, serverTimestamp,
-  updateDoc, arrayUnion, arrayRemove,
+  updateDoc, arrayUnion, arrayRemove, increment,
 } from 'firebase/firestore';
 
 interface Post {
@@ -16,6 +16,7 @@ interface Post {
   petType: string;
   createdAt: any;
   likes: string[];
+  commentCount: number;
 }
 
 interface Comment {
@@ -56,6 +57,7 @@ export default function PostDetailPage() {
         petType: raw.petType,
         createdAt: raw.createdAt,
         likes: raw.likes ?? [],
+        commentCount: raw.commentCount ?? 0,
       });
     } catch (e) { console.error(e); }
     setLoadingPost(false);
@@ -87,12 +89,18 @@ export default function PostDetailPage() {
     if (!commentText.trim()) return;
     setPosting(true);
     try {
+      // เพิ่ม comment
       await addDoc(collection(db, 'posts', postId, 'comments'), {
         content: commentText.trim(),
         authorEmail: user.email,
         createdAt: serverTimestamp(),
       });
+      // ✅ +1 commentCount ใน post document
+      await updateDoc(doc(db, 'posts', postId), {
+        commentCount: increment(1),
+      });
       setCommentText('');
+      setPost(p => p ? { ...p, commentCount: (p.commentCount ?? 0) + 1 } : p);
       await fetchComments();
     } catch (e) { console.error(e); }
     setPosting(false);
@@ -100,7 +108,12 @@ export default function PostDetailPage() {
 
   const handleDeleteComment = async (commentId: string) => {
     await deleteDoc(doc(db, 'posts', postId, 'comments', commentId));
+    // ✅ -1 commentCount ใน post document
+    await updateDoc(doc(db, 'posts', postId), {
+      commentCount: increment(-1),
+    });
     setComments(c => c.filter(x => x.id !== commentId));
+    setPost(p => p ? { ...p, commentCount: Math.max(0, (p.commentCount ?? 1) - 1) } : p);
   };
 
   const handleLike = async () => {
@@ -155,10 +168,7 @@ export default function PostDetailPage() {
       <main style={{ maxWidth: '680px', margin: '0 auto', padding: '32px 24px' }}>
 
         {/* Back */}
-        <button
-          onClick={() => router.push('/community')}
-          style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: '#6b7280', fontSize: '13px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit', marginBottom: '20px', padding: 0 }}
-        >
+        <button onClick={() => router.push('/community')} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: '#6b7280', fontSize: '13px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit', marginBottom: '20px', padding: 0 }}>
           ← กลับไปชุมชน
         </button>
 
@@ -171,32 +181,20 @@ export default function PostDetailPage() {
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
                 <div>
-                  <span style={{ fontSize: '14px', fontWeight: '600', color: '#111827' }}>
-                    {post.authorEmail?.split('@')[0]}
-                  </span>
-                  <span style={{ fontSize: '12px', color: '#9ca3af', marginLeft: '8px' }}>
-                    · {timeAgo(post.createdAt)}
-                  </span>
+                  <span style={{ fontSize: '14px', fontWeight: '600', color: '#111827' }}>{post.authorEmail?.split('@')[0]}</span>
+                  <span style={{ fontSize: '12px', color: '#9ca3af', marginLeft: '8px' }}>· {timeAgo(post.createdAt)}</span>
                 </div>
                 <span style={{ fontSize: '11px', fontWeight: '600', padding: '3px 10px', borderRadius: '999px', background: pet.bg, color: pet.color }}>
                   {pet.icon} {pet.label}
                 </span>
               </div>
-
-              <p style={{ fontSize: '15px', color: '#374151', lineHeight: '1.7', margin: '0 0 16px' }}>
-                {post.content}
-              </p>
-
-              {/* Actions */}
+              <p style={{ fontSize: '15px', color: '#374151', lineHeight: '1.7', margin: '0 0 16px' }}>{post.content}</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '14px', borderTop: '1px solid #f3f4f6' }}>
-                <button
-                  onClick={handleLike}
-                  style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '8px', border: '1px solid', borderColor: liked ? '#fecaca' : '#e5e7eb', background: liked ? '#fef2f2' : 'white', color: liked ? '#ef4444' : '#6b7280', fontSize: '13px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
-                >
+                <button onClick={handleLike} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '8px', border: '1px solid', borderColor: liked ? '#fecaca' : '#e5e7eb', background: liked ? '#fef2f2' : 'white', color: liked ? '#ef4444' : '#6b7280', fontSize: '13px', fontWeight: '500', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}>
                   {liked ? '❤️' : '🤍'} {post.likes?.length || 0} ถูกใจ
                 </button>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '8px', border: '1px solid #e5e7eb', background: 'white', color: '#6b7280', fontSize: '13px' }}>
-                  💬 {comments.length} ความคิดเห็น
+                  💬 {post.commentCount ?? comments.length} ความคิดเห็น
                 </div>
               </div>
             </div>
@@ -220,11 +218,7 @@ export default function PostDetailPage() {
                   style={{ width: '100%', border: 'none', outline: 'none', fontSize: '14px', color: '#111827', resize: 'none', fontFamily: 'inherit', lineHeight: '1.6', background: 'transparent', boxSizing: 'border-box' }}
                 />
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
-                  <button
-                    onClick={handleComment}
-                    disabled={posting || !commentText.trim()}
-                    style={{ background: posting || !commentText.trim() ? '#e5e7eb' : '#0d9488', color: posting || !commentText.trim() ? '#9ca3af' : 'white', border: 'none', borderRadius: '8px', padding: '7px 18px', fontSize: '13px', fontWeight: '600', cursor: posting || !commentText.trim() ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
-                  >
+                  <button onClick={handleComment} disabled={posting || !commentText.trim()} style={{ background: posting || !commentText.trim() ? '#e5e7eb' : '#0d9488', color: posting || !commentText.trim() ? '#9ca3af' : 'white', border: 'none', borderRadius: '8px', padding: '7px 18px', fontSize: '13px', fontWeight: '600', cursor: posting || !commentText.trim() ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}>
                     {posting ? 'กำลังส่ง...' : 'ส่ง'}
                   </button>
                 </div>
@@ -240,12 +234,11 @@ export default function PostDetailPage() {
           )}
         </div>
 
-        {/* Comments */}
+        {/* Comments List */}
         <div>
           <h2 style={{ fontSize: '14px', fontWeight: '700', color: '#111827', margin: '0 0 12px', letterSpacing: '-0.01em' }}>
             ความคิดเห็น {comments.length > 0 && `(${comments.length})`}
           </h2>
-
           {loadingComments ? (
             <div style={{ textAlign: 'center', padding: '32px 0', color: '#9ca3af', fontSize: '14px' }}>กำลังโหลด...</div>
           ) : comments.length === 0 ? (
@@ -266,27 +259,17 @@ export default function PostDetailPage() {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                           <div>
-                            <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>
-                              {comment.authorEmail?.split('@')[0]}
-                            </span>
-                            <span style={{ fontSize: '11px', color: '#9ca3af', marginLeft: '6px' }}>
-                              · {timeAgo(comment.createdAt)}
-                            </span>
+                            <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{comment.authorEmail?.split('@')[0]}</span>
+                            <span style={{ fontSize: '11px', color: '#9ca3af', marginLeft: '6px' }}>· {timeAgo(comment.createdAt)}</span>
                           </div>
                           {isOwner && (
-                            <button
-                              onClick={() => handleDeleteComment(comment.id)}
-                              style={{ background: 'none', border: 'none', color: '#d1d5db', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit', padding: '2px 6px', borderRadius: '4px', transition: 'color 0.15s' }}
+                            <button onClick={() => handleDeleteComment(comment.id)} style={{ background: 'none', border: 'none', color: '#d1d5db', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit', padding: '2px 6px', borderRadius: '4px', transition: 'color 0.15s' }}
                               onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = '#ef4444'}
                               onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = '#d1d5db'}
-                            >
-                              ลบ
-                            </button>
+                            >ลบ</button>
                           )}
                         </div>
-                        <p style={{ fontSize: '14px', color: '#374151', lineHeight: '1.6', margin: 0, wordBreak: 'break-word' }}>
-                          {comment.content}
-                        </p>
+                        <p style={{ fontSize: '14px', color: '#374151', lineHeight: '1.6', margin: 0, wordBreak: 'break-word' }}>{comment.content}</p>
                       </div>
                     </div>
                   </div>
