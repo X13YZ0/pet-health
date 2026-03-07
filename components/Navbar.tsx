@@ -181,10 +181,11 @@ export default function Navbar(): React.ReactNode | null {
   // Navigation items configuration
   const navItems: NavItem[] = [
     { href: '/', label: 'หน้าหลัก' },
-    { href: '/community', label: 'ชุมชน' },
+    { label: '🔍 ตรวจอาการ',    href: '/symptom-checker' },
     { href: '/chat', label: 'AI Assistant' },
-    { href: '/emergency', label: 'ฉุกเฉิน', danger: true },
-    { label: 'Health Tracker', href: '/tracker' },
+    // { href: '/emergency', label: 'ฉุกเฉิน', danger: true },
+    { href: '/articles', label: 'บทความ'},
+    // { label: 'Health Tracker', href: '/tracker' },
     { href: '/about', label: 'เกี่ยวกับ' },
   ];
 

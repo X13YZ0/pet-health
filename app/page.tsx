@@ -239,19 +239,23 @@ const HOME_STYLES = {
   } as CSSProperties,
 
   faqButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    padding: '12px 16px',
-    borderRadius: '10px',
-    border: '1px solid #e5e7eb',
-    background: '#f9fafb',
-    cursor: 'pointer',
-    textAlign: 'left',
-    transition: 'all 0.15s ease',
-    fontFamily: 'inherit',
-    fontSize: '13px',
-  } as CSSProperties,
+  display: 'flex',
+  alignItems: 'center',
+  gap: '10px',
+  padding: '12px 16px',
+  borderRadius: '10px',
+
+  borderWidth: '1px',
+  borderStyle: 'solid',
+  borderColor: '#e5e7eb',
+
+  background: '#f9fafb',
+  cursor: 'pointer',
+  textAlign: 'left',
+  transition: 'all 0.15s ease',
+  fontFamily: 'inherit',
+  fontSize: '13px',
+} as CSSProperties,
 
   faqButtonHover: {
     background: '#f0fdfa',
@@ -350,46 +354,46 @@ export default function HomePage(): React.ReactNode {
    * Features configuration
    */
   const features: Feature[] = [
-    {
-      icon: '🤖',
-      title: 'AI Assistant',
-      desc: 'ถามเรื่องสุขภาพสัตว์เลี้ยงได้ทันที ตอบพร้อมแหล่งอ้างอิงจากผู้เชี่ยวชาญ',
-      action: () => router.push('/chat'),
-      cta: 'ลองเลย',
-      color: '#0d9488',
-      bg: '#f0fdfa',
-    },
-    {
-      icon: '👥',
-      title: 'ชุมชนเจ้าของสัตว์เลี้ยง',
-      desc: 'แชร์ประสบการณ์ ถามตอบ และเรียนรู้จากคนที่เลี้ยงสัตว์เหมือนกัน',
-      action: () => router.push('/community'),
-      cta: 'ดูชุมชน',
-      color: '#7c3aed',
-      bg: '#faf5ff',
-    },
-    {
-      icon: '🚨',
-      title: 'ข้อมูลฉุกเฉิน',
-      desc: 'เบอร์โทรสัตวแพทย์ฉุกเฉิน อาการที่ต้องระวัง และ first aid guide',
-      action: () => router.push('/emergency'),
-      cta: 'ดูข้อมูล',
-      color: '#dc2626',
-      bg: '#fff1f2',
-    },
-  ];
+  {
+    icon: '🩺',
+    title: 'ตรวจอาการสัตว์เลี้ยง',
+    desc: 'กรอกอาการของสัตว์เลี้ยงเพื่อ วิเคราะห์ระดับความเสี่ยงเบื้องต้น',
+    action: () => router.push('/symptom-checker'),
+    cta: 'เริ่มตรวจ',
+    color: '#0d9488',
+    bg: '#f0fdfa',
+  },
+  {
+    icon: '🤖',
+    title: 'AI Assistant',
+    desc: 'ถามคำถามเกี่ยวกับสุขภาพสัตว์เลี้ยงและการดูแลทั่วไป',
+    action: () => router.push('/chat'),
+    cta: 'ถาม AI',
+    color: '#2563eb',
+    bg: '#eff6ff',
+  },
+  {
+    icon: '📚',
+    title: 'บทความสุขภาพสัตว์',
+    desc: 'รวมบทความและคำแนะนำเกี่ยวกับการดูแลสัตว์เลี้ยง',
+    action: () => router.push('/articles'),
+    cta: 'อ่านบทความ',
+    color: '#7c3aed',
+    bg: '#faf5ff',
+  },
+];
 
   /**
    * FAQ questions configuration
    */
   const faqs: FAQ[] = [
-    { q: 'สุนัขกินองุ่นได้ไหม?', tag: '🐶' },
-    { q: 'แมวควรฉีดวัคซีนอะไรบ้าง?', tag: '🐱' },
-    { q: 'สัตว์เลี้ยงมีไข้ทำยังไง?', tag: '🌡️' },
-    { q: 'อาหารที่ห้ามให้สุนัขกิน', tag: '🚫' },
-    { q: 'วิธีดูแลลูกแมวแรกเกิด', tag: '🍼' },
-    { q: 'สัญญาณที่ต้องพาไปหาหมอด่วน', tag: '⚠️' },
-  ];
+  { q: 'สัตว์เลี้ยงอาเจียนควรทำอย่างไร?', tag: '🤢' },
+  { q: 'สุนัขท้องเสียต้องพาไปหาหมอไหม?', tag: '💩' },
+  { q: 'แมวซึมและไม่กินอาหาร', tag: '😿' },
+  { q: 'สัตว์เลี้ยงมีไข้ควรทำอย่างไร?', tag: '🌡️' },
+  { q: 'สัญญาณอันตรายที่ต้องพาไปหาหมอ', tag: '⚠️' },
+  { q: 'สัตว์เลี้ยงหายใจเร็วผิดปกติ', tag: '😮‍💨' },
+];
 
   /**
    * Handle feature card keyboard interaction
@@ -421,27 +425,27 @@ export default function HomePage(): React.ReactNode {
 
           {/* Hero Title */}
           <h1 style={HOME_STYLES.heroTitle}>
-            ดูแลสัตว์เลี้ยง
-            <br />
-            <span style={HOME_STYLES.heroTitleHighlight}>ได้ง่ายขึ้น</span>
-          </h1>
+  วิเคราะห์
+  <br />
+  <span style={HOME_STYLES.heroTitleHighlight}>อาการสัตว์เลี้ยงเบื้องต้น</span>
+</h1>
 
           {/* Hero Description */}
           <p style={HOME_STYLES.heroDescription}>
-            แพลตฟอร์มที่รวม AI assistant ชุมชนเจ้าของสัตว์เลี้ยง
-            <br />
-            และข้อมูลฉุกเฉินไว้ในที่เดียว
-          </p>
+  ระบบช่วยประเมินอาการสัตว์เลี้ยงเบื้องต้น
+  เพื่อช่วยให้เจ้าของตัดสินใจได้เร็วขึ้น และใช้โมเดล Decision Tree
+เพื่อประเมินระดับความเสี่ยงจากอาการ
+</p>
 
           {/* CTA Buttons */}
           <div style={HOME_STYLES.buttonContainer}>
             <button
-              onClick={() => router.push('/chat')}
-              style={HOME_STYLES.primaryButton}
-              aria-label="Ask AI about pet health"
-            >
-              ถาม AI เลย →
-            </button>
+  onClick={() => router.push('/symptom-checker')}
+  style={HOME_STYLES.primaryButton}
+>
+  เริ่มตรวจอาการ →
+</button>
+
 
             {!user && (
               <button
