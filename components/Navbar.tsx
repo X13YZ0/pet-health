@@ -186,7 +186,7 @@ export default function Navbar(): React.ReactNode | null {
     // { href: '/emergency', label: 'ฉุกเฉิน', danger: true },
     { href: '/articles', label: 'บทความ'},
     // { label: 'Health Tracker', href: '/tracker' },
-    { href: '/about', label: 'เกี่ยวกับ' },
+    // { href: '/about', label: 'เกี่ยวกับ' },
   ];
 
   /**
