@@ -899,7 +899,7 @@ export default function SymptomCheckerPage() {
                 </div>
                 {(result.risk === 'high' || result.risk === 'emergency') && (
                   <a href="tel:1669" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '14px', background: '#dc2626', color: 'white', padding: '13px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: '700' }}>
-                    📞 โทรฉุกเฉิน 1669
+                    📞 โทรฉุกเฉิน
                   </a>
                 )}
               </div>
