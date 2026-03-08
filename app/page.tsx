@@ -433,8 +433,7 @@ export default function HomePage(): React.ReactNode {
           {/* Hero Description */}
           <p style={HOME_STYLES.heroDescription}>
   ระบบช่วยประเมินอาการสัตว์เลี้ยงเบื้องต้น
-  เพื่อช่วยให้เจ้าของตัดสินใจได้เร็วขึ้น และใช้โมเดล Decision Tree
-เพื่อประเมินระดับความเสี่ยงจากอาการ
+  เพื่อช่วยให้เจ้าของตัดสินใจได้เร็วขึ้น
 </p>
 
           {/* CTA Buttons */}
